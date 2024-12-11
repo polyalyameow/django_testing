@@ -1,17 +1,9 @@
-
-from django.test import Client, TestCase
 from django.contrib.auth import get_user_model
+from django.test import Client, TestCase
 from django.urls import reverse
 
 from notes.models import Note
 
-
-# 1. отдельная заметка передаётся на страницу со
-# списком заметок в списке object_list в словаре context;
-# 2. в список заметок одного пользователя не попадают
-# заметки другого пользователя;
-# 3. на страницы создания и редактирования заметки
-# передаются формы.
 
 User = get_user_model()
 

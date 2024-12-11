@@ -1,5 +1,7 @@
 from http import HTTPStatus
+
 from pytils.translit import slugify
+
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -7,13 +9,6 @@ from django.urls import reverse
 from notes.forms import WARNING
 from notes.models import Note
 
-# 1. Залогиненный пользователь может создать заметку,
-# а анонимный — не может.
-# 2. Невозможно создать две заметки с одинаковым slug.
-# 3. Если при создании заметки не заполнен slug,
-# то он формируется автоматически, с помощью функции pytils.translit.slugify.
-# 4. Пользователь может редактировать и удалять свои заметки,
-# но не может редактировать или удалять чужие.
 
 User = get_user_model()
 

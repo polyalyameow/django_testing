@@ -1,44 +1,34 @@
 from django.conf import settings
-from django.urls import reverse
 
 import pytest
 
-# 1. Количество новостей на главной странице — не более 10.
-# 2. Новости отсортированы от самой свежей к самой старой.
-# Свежие новости в начале списка.
-# 3. Комментарии на странице отдельной новости отсортированы
-# в хронологическом порядке: старые в начале списка, новые — в конце.
-# 4. Анонимному пользователю недоступна форма для отправки комментария
-# на странице отдельной новости, а авторизованному доступна.
+from news.forms import CommentForm
 
 
 @pytest.mark.django_db
-def test_news_count(client, list_news):
-    url = reverse("news:home")
-    response = client.get(url)
+def test_news_count(client, home_url, list_news):
+    response = client.get(home_url)
     object_list = response.context["object_list"]
-    news_count = len(object_list)
-    assert news_count == settings.NEWS_COUNT_ON_HOME_PAGE
+    assert object_list.count() == settings.NEWS_COUNT_ON_HOME_PAGE
 
 
 @pytest.mark.django_db
-def test_news_order(client, list_news):
-    url = reverse("news:home")
-    response = client.get(url)
+def test_news_order(client, home_url, list_news):
+    response = client.get(home_url)
     object_list = response.context["object_list"]
     all_news = [news for news in object_list]
     sorted_news = sorted(all_news, key=lambda x: x.date, reverse=True)
-    assert sorted_news == list_news
+    assert sorted_news == list(object_list)
 
 
 @pytest.mark.django_db
-def test_comments_order(client, news, list_comments):
-    url = reverse("news:detail", args=(news.id,))
-    response = client.get(url)
+def test_comments_order(client, news_detail_url, list_comments):
+    response = client.get(news_detail_url)
     assert "news" in response.context
     news = response.context["news"]
-    all_comments = news.comment_set.all()
-    assert all_comments[0].created < all_comments[1].created
+    all_comments = news.comment_set.order_by("created")
+    assert all(c1.created <= c2.created for c1, c2 in zip(
+        all_comments, all_comments[1:]))
 
 
 @pytest.mark.parametrize(
@@ -49,7 +39,9 @@ def test_comments_order(client, news, list_comments):
     ),
 )
 @pytest.mark.django_db
-def test_anonymous_client_has_no_form(parametrized_client, status, comment):
-    url = reverse("news:detail", args=(comment.id,))
-    response = parametrized_client.get(url)
-    assert ("form" in response.context) is status
+def test_anonymous_client_has_no_form(parametrized_client, status,
+                                      news_detail_url):
+    response = parametrized_client.get(news_detail_url)
+    has_form = "form" in response.context and isinstance(
+        response.context["form"], CommentForm)
+    assert has_form == status
