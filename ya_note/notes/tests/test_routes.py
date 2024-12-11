@@ -30,7 +30,7 @@ class TestRoutes(BaseTestCase):
         for url in restricted_urls:
             with self.subTest(url=url):
                 response = self.client.get(url)
-                redirect_url = f"{reverse("users:login")}?next={url}"
+                redirect_url = f"{reverse('users:login')}?next={url}"
                 self.assertRedirects(response, redirect_url)
 
     def test_authenticated_user_access_and_authorization(self):
