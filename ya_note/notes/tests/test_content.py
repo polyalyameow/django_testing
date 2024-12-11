@@ -1,50 +1,31 @@
-from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
-from django.urls import reverse
-
-from notes.models import Note
+from .common import BaseTestCase
 
 
-User = get_user_model()
-
-
-class TestContent(TestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.author = User.objects.create(username="Автор")
-        cls.reader = User.objects.create(username="Читатель")
-        cls.author_logged = Client()
-        cls.reader_logged = Client()
-        cls.author_logged.force_login(cls.author)
-        cls.reader_logged.force_login(cls.reader)
-        cls.note = Note.objects.create(
-            title="Заголовок",
-            text="Текст заметки",
-            slug="note-slug",
-            author=cls.author,
-        )
-        cls.NOTES_LIST = reverse("notes:list")
-        cls.NOTES_ADD = reverse("notes:add")
-        cls.NOTES_EDIT = reverse("notes:edit", args=(cls.note.slug,))
+class TestContent(BaseTestCase):
 
     def test_list_notes_for_different_users(self):
-
+        """Отображаются записи залогиненного пользователя"""
         user_status = (
             (self.author_logged, True),
             (self.reader_logged, False),
         )
 
         for user, status in user_status:
-            with self.subTest():
+            with self.subTest(user=user):
                 response = user.get(self.NOTES_LIST)
                 object_list = response.context["object_list"]
                 self.assertEqual(self.note in object_list, status)
 
     def test_pages_contain_forms(self):
+        """
+        На страницы создания и редактирования заметок
+        передаются формы
+        """
         urls = (self.NOTES_ADD, self.NOTES_EDIT)
 
         for url in urls:
-            with self.subTest():
+            with self.subTest(url=url):
                 response = self.author_logged.get(url)
                 self.assertIn("form", response.context)
+                self.assertEqual(type(response.context["form"]
+                                      ).__name__, "NoteForm")

@@ -7,6 +7,7 @@ from news.forms import CommentForm
 
 @pytest.mark.django_db
 def test_news_count(client, home_url, list_news):
+    """10 новостей на главной странице"""
     response = client.get(home_url)
     object_list = response.context["object_list"]
     assert object_list.count() == settings.NEWS_COUNT_ON_HOME_PAGE
@@ -14,6 +15,7 @@ def test_news_count(client, home_url, list_news):
 
 @pytest.mark.django_db
 def test_news_order(client, home_url, list_news):
+    """Сортировка новостей - от нового к старому"""
     response = client.get(home_url)
     object_list = response.context["object_list"]
     all_news = [news for news in object_list]
@@ -23,6 +25,7 @@ def test_news_order(client, home_url, list_news):
 
 @pytest.mark.django_db
 def test_comments_order(client, news_detail_url, list_comments):
+    """Сортировка новостей - от старого к новому"""
     response = client.get(news_detail_url)
     assert "news" in response.context
     news = response.context["news"]
@@ -41,6 +44,10 @@ def test_comments_order(client, news_detail_url, list_comments):
 @pytest.mark.django_db
 def test_anonymous_client_has_no_form(parametrized_client, status,
                                       news_detail_url):
+    """
+    Анонимному пользователю недостурна форма
+    для отправки комментов
+    """
     response = parametrized_client.get(news_detail_url)
     has_form = "form" in response.context and isinstance(
         response.context["form"], CommentForm)

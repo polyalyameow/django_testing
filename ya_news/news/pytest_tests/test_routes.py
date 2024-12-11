@@ -24,8 +24,10 @@ from .conftest import URL, ADMIN, AUTHOR, CLIENT
 def test_pages_availability_for_anonymous_user(
     url, parametrized_client, expected_status, comment
 ):
+    """Страницы, доступные анонимному пользователю"""
     response = parametrized_client.get(url)
     assert response.status_code == expected_status
+
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
@@ -33,6 +35,11 @@ def test_pages_availability_for_anonymous_user(
     (URL.edit, URL.delete),
 )
 def test_redirect_for_anonymous_client(client, url, comment):
+    """
+    Переадресация анонимного пользователя
+    на страницу входа, если пользователь пытается
+    перейти на страницу редактирования или удаления
+    """
     expected_url = f'{URL.login}?next={url}'
     response = client.get(url)
     assertRedirects(response, expected_url)
