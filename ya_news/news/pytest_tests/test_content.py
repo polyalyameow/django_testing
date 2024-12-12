@@ -5,6 +5,7 @@ from django.conf import settings
 
 from news.forms import CommentForm
 
+
 @pytest.mark.django_db
 def test_news_count(client, home_url, list_news):
     """10 новостей на главной странице"""

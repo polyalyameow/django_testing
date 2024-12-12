@@ -21,7 +21,7 @@ def test_anonymous_user_cant_create_comment(client, news_detail_url):
 
 @pytest.mark.django_db
 def test_user_can_create_comment(author_client, author,
-                                 news_detail_url, news):
+                                 news_detail_url, news, comment):
     """
     Залогиненный пользователь может отправить
     комментарий
@@ -31,10 +31,10 @@ def test_user_can_create_comment(author_client, author,
     initial_count = Comment.objects.count()
     author_client.post(news_detail_url, data={"text": TEXT_COMMENT})
     assert Comment.objects.count() == initial_count + 1
-    comment = Comment.objects.get(author=author, text=TEXT_COMMENT)
-    assert comment.text == TEXT_COMMENT
-    assert comment.news == news
-    assert comment.author == author
+    new_comment = Comment.objects.get(id=comment.id)
+    assert new_comment.text == TEXT_COMMENT
+    assert new_comment.news == news
+    assert new_comment.author == author
 
 
 @pytest.mark.django_db
@@ -58,34 +58,41 @@ def test_user_cant_use_bad_words(author_client, news_detail_url):
 def test_delete_own_comment(author_client, news, comment,
                             news_detail_url, delete_comment_url):
     """Залогиненный пользователь может удалить свой коммент"""
+    initial_count = Comment.objects.count()
     response = author_client.delete(delete_comment_url)
     assertRedirects(response, news_detail_url + "#comments")
     assert not Comment.objects.filter(id=comment.id).exists()
+    assert Comment.objects.count() == initial_count - 1
 
 
 @pytest.mark.django_db
 def test_edit_own_comment(author_client, news, comment,
                           news_detail_url, comment_edit_url, author):
     """Залогиненный пользователь может изменить свой коммент"""
-    news_url = news_detail_url
-    comment_url = comment_edit_url
-    response = author_client.post(comment_url, data={"text": TEXT_COMMENT})
-    assertRedirects(response, news_url + "#comments")
+    initial_count = Comment.objects.count()
+    response = author_client.post(comment_edit_url,
+                                  data={"text": TEXT_COMMENT})
+    assertRedirects(response, news_detail_url + "#comments")
     updated_comment = Comment.objects.get(id=comment.id)
     assert updated_comment.text == TEXT_COMMENT
     assert updated_comment.news == news
     assert updated_comment.author == comment.author
+    assert Comment.objects.count() == initial_count
 
 
 @pytest.mark.django_db
 def test_delete_comment_of_another_user(admin_client, comment,
                                         delete_comment_url):
     """Пользователь не может удалить чужой коммент"""
+    initial_comment = Comment.objects.get(id=comment.id)
     initial_count = Comment.objects.count()
     response = admin_client.delete(delete_comment_url)
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert Comment.objects.count() == initial_count
     assert Comment.objects.filter(id=comment.id).exists()
+    assert initial_comment.text == comment.text
+    assert initial_comment.author == comment.author
+    assert initial_comment.news == comment.news
 
 
 @pytest.mark.django_db
@@ -94,5 +101,6 @@ def test_edit_comment_of_another_user(admin_client, comment, comment_edit_url):
     initial_comment = Comment.objects.get(id=comment.id)
     response = admin_client.post(comment_edit_url, data={"text": TEXT_COMMENT})
     assert response.status_code == HTTPStatus.NOT_FOUND
-    comment.refresh_from_db()
     assert initial_comment.text == comment.text
+    assert initial_comment.author == comment.author
+    assert initial_comment.news == comment.news

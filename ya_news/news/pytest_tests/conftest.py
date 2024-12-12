@@ -13,36 +13,12 @@ NEWS_HOME = reverse("news:home")
 LOGIN_URL = reverse("users:login")
 LOGOUT_URL = reverse("users:logout")
 SIGNUP_URL = reverse("users:signup")
-# ADMIN = lazy_fixture("admin_client")
-# AUTHOR = lazy_fixture("author_client")
-# CLIENT = lazy_fixture("client")
 
-# URL_NAME = namedtuple(
-#     "NAME",
-#     [
-#         "home",
-#         "detail",
-#         "edit",
-#         "delete",
-#         "login",
-#         "logout",
-#         "signup",
-#     ],
-# )
-
-# URL = URL_NAME(
-#     reverse("news:home"),
-#     reverse("news:detail", args=(id,)),
-#     reverse("news:edit", args=(id,)),
-#     reverse("news:delete", args=(id,)),
-#     reverse("users:login"),
-#     reverse("users:logout"),
-#     reverse("users:signup"),
-# )
 
 @pytest.fixture
 def client():
     return Client()
+
 
 @pytest.fixture
 def home_url():
@@ -99,15 +75,16 @@ def comment(news, author):
 @pytest.fixture
 def list_news():
     today = datetime.today()
+    news_list = []
     for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1):
-        news_list = [
+        news_list.append(
             News.objects.create(
                 title="Новость {index}",
                 text="Текст новости",
                 date=today - timedelta(days=index)
             )
-        ]
-    #return news_list
+        )
+    return news_list
 
 
 @pytest.fixture
@@ -123,17 +100,7 @@ def list_comments(news, author):
         comment.save()
         list_comment.append(comment)
 
+
 @pytest.fixture
 def pk_for_args(comment):
     return (comment.pk,)
-
-# @pytest.fixture
-# def reader(django_user_model):
-#     return django_user_model.objects.create(username="Reader")
-
-
-# @pytest.fixture
-# def reader_client(reader):
-#     client = Client()
-#     client.force_login(reader)
-#     return client
