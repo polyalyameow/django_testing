@@ -1,9 +1,9 @@
+import pytest
+from pytest_lazyfixture import lazy_fixture
+
 from django.conf import settings
 
-import pytest
-
 from news.forms import CommentForm
-
 
 @pytest.mark.django_db
 def test_news_count(client, home_url, list_news):
@@ -37,8 +37,8 @@ def test_comments_order(client, news_detail_url, list_comments):
 @pytest.mark.parametrize(
     "parametrized_client, status",
     (
-        (pytest.lazy_fixture("client"), False),
-        (pytest.lazy_fixture("author_client"), True)
+        (lazy_fixture("client"), False),
+        (lazy_fixture("author_client"), True)
     ),
 )
 @pytest.mark.django_db

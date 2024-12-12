@@ -1,45 +1,48 @@
-from collections import namedtuple
 from datetime import datetime, timedelta
 
+import pytest
 from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
 from django.test import Client
 
-import pytest
-from pytest_lazyfixture import lazy_fixture
-
 from news.models import News, Comment
 
-ID = 1
 TEXT_COMMENT = "Текст комментария"
-ADMIN = lazy_fixture('admin_client')
-AUTHOR = lazy_fixture('author_client')
-CLIENT = lazy_fixture('client')
+NEWS_HOME = reverse("news:home")
+LOGIN_URL = reverse("users:login")
+LOGOUT_URL = reverse("users:logout")
+SIGNUP_URL = reverse("users:signup")
+# ADMIN = lazy_fixture("admin_client")
+# AUTHOR = lazy_fixture("author_client")
+# CLIENT = lazy_fixture("client")
 
-URL_NAME = namedtuple(
-    'NAME',
-    [
-        'home',
-        'detail',
-        'edit',
-        'delete',
-        'login',
-        'logout',
-        'signup',
-    ],
-)
+# URL_NAME = namedtuple(
+#     "NAME",
+#     [
+#         "home",
+#         "detail",
+#         "edit",
+#         "delete",
+#         "login",
+#         "logout",
+#         "signup",
+#     ],
+# )
 
-URL = URL_NAME(
-    reverse('news:home'),
-    reverse('news:detail', args=(ID,)),
-    reverse('news:edit', args=(ID,)),
-    reverse('news:delete', args=(ID,)),
-    reverse('users:login'),
-    reverse('users:logout'),
-    reverse('users:signup'),
-)
+# URL = URL_NAME(
+#     reverse("news:home"),
+#     reverse("news:detail", args=(id,)),
+#     reverse("news:edit", args=(id,)),
+#     reverse("news:delete", args=(id,)),
+#     reverse("users:login"),
+#     reverse("users:logout"),
+#     reverse("users:signup"),
+# )
 
+@pytest.fixture
+def client():
+    return Client()
 
 @pytest.fixture
 def home_url():
@@ -104,7 +107,7 @@ def list_news():
                 date=today - timedelta(days=index)
             )
         ]
-    return news_list
+    #return news_list
 
 
 @pytest.fixture
@@ -120,14 +123,17 @@ def list_comments(news, author):
         comment.save()
         list_comment.append(comment)
 
-
 @pytest.fixture
-def reader(django_user_model):
-    return django_user_model.objects.create(username="Reader")
+def pk_for_args(comment):
+    return (comment.pk,)
+
+# @pytest.fixture
+# def reader(django_user_model):
+#     return django_user_model.objects.create(username="Reader")
 
 
-@pytest.fixture
-def reader_client(reader):
-    client = Client()
-    client.force_login(reader)
-    return client
+# @pytest.fixture
+# def reader_client(reader):
+#     client = Client()
+#     client.force_login(reader)
+#     return client
