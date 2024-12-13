@@ -21,7 +21,7 @@ def test_anonymous_user_cant_create_comment(client, news_detail_url):
 
 @pytest.mark.django_db
 def test_user_can_create_comment(author_client, author,
-                                 news_detail_url, news, comment):
+                                 news_detail_url, news):
     """
     Залогиненный пользователь может отправить
     комментарий
@@ -29,9 +29,12 @@ def test_user_can_create_comment(author_client, author,
     response = author_client.get(news_detail_url)
     assert response.status_code == 200
     initial_count = Comment.objects.count()
-    author_client.post(news_detail_url, data={"text": TEXT_COMMENT})
+
+    response = author_client.post(news_detail_url, data={"text": TEXT_COMMENT})
+    assert response.status_code == HTTPStatus.FOUND
     assert Comment.objects.count() == initial_count + 1
-    new_comment = Comment.objects.get(id=comment.id)
+    
+    new_comment = Comment.objects.latest('id')
     assert new_comment.text == TEXT_COMMENT
     assert new_comment.news == news
     assert new_comment.author == author
@@ -98,9 +101,11 @@ def test_delete_comment_of_another_user(admin_client, comment,
 @pytest.mark.django_db
 def test_edit_comment_of_another_user(admin_client, comment, comment_edit_url):
     """Пользователь не может отредактировать чужой коммент"""
+    initial_count = Comment.objects.count()
     initial_comment = Comment.objects.get(id=comment.id)
     response = admin_client.post(comment_edit_url, data={"text": TEXT_COMMENT})
     assert response.status_code == HTTPStatus.NOT_FOUND
+    assert Comment.objects.count() == initial_count
     assert initial_comment.text == comment.text
     assert initial_comment.author == comment.author
     assert initial_comment.news == comment.news

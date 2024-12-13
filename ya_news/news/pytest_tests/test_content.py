@@ -1,6 +1,5 @@
 import pytest
 from pytest_lazyfixture import lazy_fixture
-
 from django.conf import settings
 
 from news.forms import CommentForm

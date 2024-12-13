@@ -16,11 +16,6 @@ SIGNUP_URL = reverse("users:signup")
 
 
 @pytest.fixture
-def client():
-    return Client()
-
-
-@pytest.fixture
 def home_url():
     return reverse("news:home")
 
@@ -44,11 +39,20 @@ def comment_edit_url(comment):
 def author(django_user_model):
     return django_user_model.objects.create(username="Автор")
 
+@pytest.fixture
+def reader(django_user_model):
+    return django_user_model.objects.create(username="Не автор")
 
 @pytest.fixture
 def author_client(author):
     client = Client()
     client.force_login(author)
+    return client
+
+@pytest.fixture
+def reader_client(reader):
+    client = Client()
+    client.force_login(reader)
     return client
 
 
@@ -75,16 +79,14 @@ def comment(news, author):
 @pytest.fixture
 def list_news():
     today = datetime.today()
-    news_list = []
-    for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1):
-        news_list.append(
-            News.objects.create(
-                title="Новость {index}",
-                text="Текст новости",
-                date=today - timedelta(days=index)
-            )
+    return [
+        News.objects.create(
+            title=f"Новость {index}",
+            text="Текст новости",
+            date=today - timedelta(days=index)
         )
-    return news_list
+        for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
+    ]
 
 
 @pytest.fixture
@@ -100,7 +102,3 @@ def list_comments(news, author):
         comment.save()
         list_comment.append(comment)
 
-
-@pytest.fixture
-def pk_for_args(comment):
-    return (comment.pk,)
