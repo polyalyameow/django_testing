@@ -57,8 +57,8 @@ class TestRoutes(BaseTestCase):
                     self.assertEqual(
                         response.status_code, entry["expected_status"])
                 else:
-                    redirect_url = f"{reverse('users:login')}?next={getattr(
-                        self, entry['url'], entry['url'])}"
+                    redirect_url = f"""{reverse('users:login')}?next={getattr(
+                        self, entry['url'], entry['url'])}"""
                     self.assertRedirects(response, redirect_url)
 
     def test_authenticated_user_access_and_authorization(self):
