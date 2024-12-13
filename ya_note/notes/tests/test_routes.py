@@ -62,8 +62,8 @@ class TestRoutes(BaseTestCase):
 
         for entry in urls:
             with self.subTest(url=entry["url"]):
-                redirect_url = f"{reverse('users:login')}?next={getattr(
-                    self, entry['url'], entry['url'])}"
+                redirect_url = f"""{reverse('users:login')}?next={getattr(
+                    self, entry['url'], entry['url'])}"""
                 response = self.client.get(getattr(
                     self, entry["url"], entry["url"]))
                 self.assertRedirects(response, redirect_url)
