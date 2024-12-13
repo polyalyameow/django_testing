@@ -5,50 +5,69 @@ from django.urls import reverse
 from .common import BaseTestCase
 
 
-class TestRoutes(BaseTestCase):
+URLS = {
+    "public": [
+        {"url": reverse("notes:home"), "expected_status": HTTPStatus.OK,
+         "is_public": True},
+        {"url": reverse("users:login"), "expected_status": HTTPStatus.OK,
+         "is_public": True},
+        {"url": reverse("users:logout"), "expected_status": HTTPStatus.OK,
+         "is_public": True},
+        {"url": reverse("users:signup"), "expected_status": HTTPStatus.OK,
+         "is_public": True},
+    ],
+    "restricted": [
+        {"url": "NOTES_LIST", "expected_status": HTTPStatus.FOUND,
+         "is_public": False},
+        {"url": "NOTES_ADD", "expected_status": HTTPStatus.FOUND,
+         "is_public": False},
+        {"url": "NOTES_SUCCESS", "expected_status": HTTPStatus.FOUND,
+         "is_public": False},
+        {"url": "NOTES_EDIT", "expected_status": HTTPStatus.FOUND,
+         "is_public": False},
+        {"url": "NOTES_DELETE", "expected_status": HTTPStatus.FOUND,
+         "is_public": False},
+    ],
+    "private_author_only": [
+        {"url": "NOTES_EDIT", "expected_status": HTTPStatus.OK,
+         "auth_type": "author_logged"},
+        {"url": "NOTES_DELETE", "expected_status": HTTPStatus.OK,
+         "auth_type": "author_logged"},
+    ],
+    "private_reader": [
+        {"url": "NOTES_EDIT", "expected_status": HTTPStatus.NOT_FOUND,
+         "auth_type": "reader_logged"},
+        {"url": "NOTES_DELETE", "expected_status": HTTPStatus.NOT_FOUND,
+         "auth_type": "reader_logged"},
+    ],
+}
 
+
+class TestRoutes(BaseTestCase):
     def test_pages_availability(self):
         """Страницы для залогиненных и анонимных пользователей"""
-        public_urls = [
-            reverse("notes:home"), reverse("users:login"),
-            reverse("users:logout"), reverse("users:signup")
-        ]
+        urls = URLS["public"] + URLS["restricted"]
 
-        for url in public_urls:
-            with self.subTest(url=url):
-                response = self.client.get(url)
-                self.assertEqual(response.status_code, HTTPStatus.OK)
+        for entry in urls:
+            with self.subTest(url=entry["url"]):
+                response = self.client.get(getattr(
+                    self, entry["url"], entry["url"]))
 
-        restricted_urls = [
-            self.NOTES_LIST,
-            self.NOTES_ADD,
-            self.NOTES_SUCCESS,
-            self.NOTES_EDIT,
-            self.NOTES_DELETE,
-        ]
-
-        for url in restricted_urls:
-            with self.subTest(url=url):
-                response = self.client.get(url)
-                redirect_url = f"{reverse('users:login')}?next={url}"
-                self.assertRedirects(response, redirect_url)
+                if entry["is_public"]:
+                    self.assertEqual(
+                        response.status_code, entry["expected_status"])
+                else:
+                    redirect_url = f"{reverse('users:login')}?next={getattr(
+                        self, entry['url'], entry['url'])}"
+                    self.assertRedirects(response, redirect_url)
 
     def test_authenticated_user_access_and_authorization(self):
         """Страницы, доступные залогиненным пользователям"""
-        private_urls = [self.NOTES_LIST, self.NOTES_ADD, self.NOTES_SUCCESS]
+        urls = URLS["private_author_only"] + URLS["private_reader"]
 
-        for url in private_urls:
-            with self.subTest(url=url):
-                response = self.author_logged.get(url)
-                self.assertEqual(response.status_code, HTTPStatus.OK)
-
-        note_urls = [self.NOTES_EDIT, self.NOTES_DELETE]
-        for url in note_urls:
-            with self.subTest(url=url):
-                response = self.reader_logged.get(url)
-                self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-
-        for url in note_urls:
-            with self.subTest(url=url):
-                response = self.author_logged.get(url)
-                self.assertEqual(response.status_code, HTTPStatus.OK)
+        for entry in urls:
+            with self.subTest(url=entry["url"], auth_type=entry["auth_type"]):
+                response = getattr(self, entry["auth_type"]).get(
+                    getattr(self, entry["url"], entry["url"]))
+                self.assertEqual(response.status_code,
+                                 entry["expected_status"])

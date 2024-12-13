@@ -1,3 +1,5 @@
+from notes.forms import NoteForm
+
 from .common import BaseTestCase
 
 
@@ -27,5 +29,4 @@ class TestContent(BaseTestCase):
             with self.subTest(url=url):
                 response = self.author_logged.get(url)
                 self.assertIn("form", response.context)
-                self.assertEqual(type(response.context["form"]
-                                      ).__name__, "NoteForm")
+                self.assertIsInstance(response.context["form"], NoteForm)
