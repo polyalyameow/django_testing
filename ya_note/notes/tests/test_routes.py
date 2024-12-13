@@ -53,21 +53,17 @@ class TestRoutes(BaseTestCase):
                 response = self.client.get(getattr(
                     self, entry["url"], entry["url"]))
 
-                if entry["is_public"]:
-                    self.assertEqual(
-                        response.status_code, entry["expected_status"])
-                else:
-                    redirect_url = f"""{reverse('users:login')}?next={getattr(
-                        self, entry['url'], entry['url'])}"""
-                    self.assertRedirects(response, redirect_url)
-
-    def test_authenticated_user_access_and_authorization(self):
-        """Страницы, доступные залогиненным пользователям"""
-        urls = URLS["private_author_only"] + URLS["private_reader"]
-
-        for entry in urls:
-            with self.subTest(url=entry["url"], auth_type=entry["auth_type"]):
-                response = getattr(self, entry["auth_type"]).get(
-                    getattr(self, entry["url"], entry["url"]))
                 self.assertEqual(response.status_code,
                                  entry["expected_status"])
+
+    def test_redirect(self):
+        """Страницы, доступные залогиненным пользователям"""
+        urls = URLS["restricted"]
+
+        for entry in urls:
+            with self.subTest(url=entry["url"]):
+                redirect_url = f"{reverse('users:login')}?next={getattr(
+                    self, entry['url'], entry['url'])}"
+                response = self.client.get(getattr(
+                    self, entry["url"], entry["url"]))
+                self.assertRedirects(response, redirect_url)

@@ -3,7 +3,6 @@ from pytils.translit import slugify
 
 from notes.forms import WARNING
 from notes.models import Note
-
 from .common import BaseTestCase
 
 
@@ -41,8 +40,8 @@ class TestNoteCreation(BaseTestCase):
             data=self.form_data
         )
         self.assertRedirects(response, self.NOTES_SUCCESS)
-        created_note = Note.objects.exclude(id=self.note.id).get()
         self.assertEqual(Note.objects.count(), initial_count + 1)
+        created_note = Note.objects.last()
         self.assertEqual(created_note.title, self.form_data["title"])
         self.assertEqual(created_note.text, self.form_data["text"])
         self.assertEqual(created_note.slug, self.form_data["slug"])
