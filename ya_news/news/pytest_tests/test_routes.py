@@ -17,20 +17,34 @@ from .conftest import LOGIN_URL, LOGOUT_URL, NEWS_HOME, SIGNUP_URL
         (LOGOUT_URL, Client(), HTTPStatus.OK),
         (SIGNUP_URL, Client(), HTTPStatus.OK),
         ("news:detail", Client(), HTTPStatus.OK),
-        (NEWS_HOME, pytest.lazy_fixture("author_client"), HTTPStatus.OK),
-        (LOGIN_URL, pytest.lazy_fixture("author_client"), HTTPStatus.OK),
-        (LOGOUT_URL, pytest.lazy_fixture("author_client"), HTTPStatus.OK),
-        (SIGNUP_URL, pytest.lazy_fixture("author_client"), HTTPStatus.OK),
-        ("news:delete", pytest.lazy_fixture("author_client"), HTTPStatus.OK),
-        ("news:edit", pytest.lazy_fixture("author_client"), HTTPStatus.OK),
-        ("news:detail", pytest.lazy_fixture("author_client"), HTTPStatus.OK),
-        (NEWS_HOME, pytest.lazy_fixture("reader_client"), HTTPStatus.OK),
-        (LOGIN_URL, pytest.lazy_fixture("reader_client"), HTTPStatus.OK),
-        (LOGOUT_URL, pytest.lazy_fixture("reader_client"), HTTPStatus.OK),
-        (SIGNUP_URL, pytest.lazy_fixture("reader_client"), HTTPStatus.OK),
-        ("news:delete", pytest.lazy_fixture("reader_client"), HTTPStatus.NOT_FOUND),
-        ("news:edit", pytest.lazy_fixture("reader_client"), HTTPStatus.NOT_FOUND),
-        ("news:detail", pytest.lazy_fixture("reader_client"), HTTPStatus.OK),
+        (NEWS_HOME, pytest.lazy_fixture("author_client"),
+         HTTPStatus.OK),
+        (LOGIN_URL, pytest.lazy_fixture("author_client"),
+         HTTPStatus.OK),
+        (LOGOUT_URL, pytest.lazy_fixture("author_client"),
+         HTTPStatus.OK),
+        (SIGNUP_URL, pytest.lazy_fixture("author_client"),
+         HTTPStatus.OK),
+        ("news:delete", pytest.lazy_fixture("author_client"),
+         HTTPStatus.OK),
+        ("news:edit", pytest.lazy_fixture("author_client"),
+         HTTPStatus.OK),
+        ("news:detail", pytest.lazy_fixture("author_client"),
+         HTTPStatus.OK),
+        (NEWS_HOME, pytest.lazy_fixture("reader_client"),
+         HTTPStatus.OK),
+        (LOGIN_URL, pytest.lazy_fixture("reader_client"),
+         HTTPStatus.OK),
+        (LOGOUT_URL, pytest.lazy_fixture("reader_client"),
+         HTTPStatus.OK),
+        (SIGNUP_URL, pytest.lazy_fixture("reader_client"),
+         HTTPStatus.OK),
+        ("news:delete", pytest.lazy_fixture("reader_client"),
+         HTTPStatus.NOT_FOUND),
+        ("news:edit", pytest.lazy_fixture("reader_client"),
+         HTTPStatus.NOT_FOUND),
+        ("news:detail", pytest.lazy_fixture("reader_client"),
+         HTTPStatus.OK),
     ),
 )
 def test_pages_availability(
@@ -44,7 +58,7 @@ def test_pages_availability(
 
     response = client.get(url)
     assert response.status_code == expected_status
-    
+
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(

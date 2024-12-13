@@ -39,15 +39,18 @@ def comment_edit_url(comment):
 def author(django_user_model):
     return django_user_model.objects.create(username="Автор")
 
+
 @pytest.fixture
 def reader(django_user_model):
     return django_user_model.objects.create(username="Не автор")
+
 
 @pytest.fixture
 def author_client(author):
     client = Client()
     client.force_login(author)
     return client
+
 
 @pytest.fixture
 def reader_client(reader):
@@ -101,4 +104,3 @@ def list_comments(news, author):
         comment.created = now + timedelta(days=index)
         comment.save()
         list_comment.append(comment)
-

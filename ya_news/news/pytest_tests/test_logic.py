@@ -33,7 +33,7 @@ def test_user_can_create_comment(author_client, author,
     response = author_client.post(news_detail_url, data={"text": TEXT_COMMENT})
     assert response.status_code == HTTPStatus.FOUND
     assert Comment.objects.count() == initial_count + 1
-    
+
     new_comment = Comment.objects.latest('id')
     assert new_comment.text == TEXT_COMMENT
     assert new_comment.news == news
