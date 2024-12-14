@@ -26,15 +26,14 @@ def test_user_can_create_comment(author_client, author,
     Залогиненный пользователь может отправить
     комментарий
     """
-    response = author_client.get(news_detail_url)
-    assert response.status_code == 200
+    existing_comments = set(Comment.objects.values_list('id', flat=True))
     initial_count = Comment.objects.count()
 
     response = author_client.post(news_detail_url, data={"text": TEXT_COMMENT})
     assert response.status_code == HTTPStatus.FOUND
     assert Comment.objects.count() == initial_count + 1
 
-    new_comment = Comment.objects.latest('id')
+    new_comment = Comment.objects.exclude(id__in=existing_comments).get()
     assert new_comment.text == TEXT_COMMENT
     assert new_comment.news == news
     assert new_comment.author == author

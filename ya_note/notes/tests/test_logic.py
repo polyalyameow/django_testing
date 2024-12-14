@@ -34,6 +34,7 @@ class TestNoteCreation(BaseTestCase):
 
     def test_user_can_create_note(self):
         """Залогиненный пользователь может создать заметку"""
+        existing_notes = set(Note.objects.values_list('id', flat=True))
         initial_count = Note.objects.count()
         response = self.author_logged.post(
             self.NOTES_ADD,
@@ -41,7 +42,7 @@ class TestNoteCreation(BaseTestCase):
         )
         self.assertRedirects(response, self.NOTES_SUCCESS)
         self.assertEqual(Note.objects.count(), initial_count + 1)
-        created_note = Note.objects.last()
+        created_note = Note.objects.exclude(id__in=existing_notes).get()
         self.assertEqual(created_note.title, self.form_data["title"])
         self.assertEqual(created_note.text, self.form_data["text"])
         self.assertEqual(created_note.slug, self.form_data["slug"])
